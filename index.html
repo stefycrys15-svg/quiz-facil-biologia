@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Ciencia y Naturaleza - Quiz Interactivo</title>
+    <style>
+        :root {
+            --bg-color: #061e19;
+            --card-bg: rgba(13, 40, 34, 0.85);
+            --card-border: #1a4d43;
+            --text-main: #e8f7f3;
+            --text-muted: #8bbcb0;
+            --primary-cyan: #00f2fe;
+            --accent-gold: #ffd700;
+            --emerald-bright: #10b981;
+            --emerald-dark: #064e3b;
+            --danger-red: #ef4444;
+            --danger-dark: #7f1d1d;
+            --correct-green: #10b981;
+            --correct-dark: #064e3b;
+            --btn-hover: #155e50;
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
+            color: var(--text-main);
+            min-height: 100dvh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 600px;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            padding: 16px;
+            background: rgba(6, 30, 25, 0.6);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Utility screens */
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            justify-content: space-between;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header & Progress */
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .badge-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        .badge {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-streak {
+            color: var(--accent-gold);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .badge-double {
+            background: #eab308;
+            color: #000;
+            font-weight: bold;
+            animation: pulse 1s infinite alternate;
+        }
+
+        .badge-shield {
+            background: #3b82f6;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 10px;
+            background: var(--card-border);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--emerald-bright), var(--primary-cyan));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Content Scroll Area */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Scrollbar styling */
+        .main-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        .main-content::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 4px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Welcome Screen */
+        .welcome-card {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin: auto 0;
+        }
+
+        .logo-icon {
+            font-size: 4rem;
+            filter: drop-shadow(0 0 15px rgba(0, 242, 254, 0.4));
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, var(--primary-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin: 8px 0;
+        }
+
+        .tag {
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--primary-cyan);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .notice-box {
+            background: rgba(255, 215, 0, 0.08);
+            border: 1px dashed rgba(255, 215, 0, 0.3);
+            color: var(--accent-gold);
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+
+        /* Question & Options */
+        .question-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            min-height: 60px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px solid var(--card-border);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: var(--btn-hover);
+            border-color: var(--primary-cyan);
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .option-key {
+            background: rgba(255, 255, 255, 0.1);
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .option-btn.correct {
+            background: var(--correct-dark) !important;
+            border-color: var(--correct-green) !important;
+            color: #fff !important;
+        }
+
+        .option-btn.wrong {
+            background: var(--danger-dark) !important;
+            border-color: var(--danger-red) !important;
+            color: #fff !important;
+        }
+
+        .option-btn.hidden-50 {
+            opacity: 0.2;
+            pointer-events: none;
+            text-decoration: line-through;
+        }
+
+        /* Feedback Area */
+        .feedback-panel {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            padding: 14px;
+            border-radius: 12px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .feedback-panel.correct {
+            display: flex;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--correct-green);
+        }
+
+        .feedback-panel.wrong {
+            display: flex;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--danger-red);
+        }
+
+        .feedback-header {
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .explanation-box {
+            background: rgba(0, 0, 0, 0.25);
+            border-left: 3px solid var(--primary-cyan);
+            padding: 10px 12px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+            color: #d1d5db;
+            line-height: 1.4;
+        }
+
+        .joke-card {
+            background: rgba(255, 215, 0, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 0.85rem;
+            color: var(--accent-gold);
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        /* Footer & Buttons */
+        .footer {
+            margin-top: auto;
+            padding-top: 8px;
+        }
+
+        .action-btn {
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.1s ease, filter 0.2s ease;
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .action-btn:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Modal / Surprise Overlay */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border: 2px solid var(--accent-gold);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .modal-icon {
+            font-size: 3.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            color: var(--accent-gold);
+            font-weight: 800;
+        }
+
+        .modal-desc {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        /* Results Screen */
+        .results-card {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-cyan);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .feedback-msg {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            padding: 12px;
+            background: rgba(0, 242, 254, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+        }
+
+        /* Canvas Confetti */
+        #confetti-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 99;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="app-container">
+
+        <!-- SURPRISE MODAL -->
+        <div id="surprise-modal" class="modal-overlay">
+            <div class="modal-card">
+                <div id="modal-icon" class="modal-icon">⚡</div>
+                <div id="modal-title" class="modal-title">¡Sorpresa!</div>
+                <div id="modal-desc" class="modal-desc">Descripción de la sorpresa</div>
+                <button id="modal-btn" class="action-btn" onclick="closeModal()">¡Vamos!</button>
+            </div>
+        </div>
+
+        <!-- WELCOME SCREEN -->
+        <div id="screen-welcome" class="screen active">
+            <div class="main-content" style="justify-content: center;">
+                <div class="card welcome-card">
+                    <div class="logo-icon">🌿</div>
+                    <h1 class="welcome-title">Ciencia y Naturaleza</h1>
+                    <p class="welcome-subtitle">Ciencia, Naturaleza, Biología</p>
+
+                    <div class="tags-container">
+                        <span class="tag">🧬 Biología</span>
+                        <span class="tag">🌋 Geología</span>
+                        <span class="tag">🪐 Astronomía</span>
+                        <span class="tag">⚡ Física & Química</span>
+                    </div>
+
+                    <div class="notice-box">
+                        ✨ <strong>¡Desafío Activo!</strong> Preguntas y opciones en orden aleatorio. ¡Incluye sorpresas, comodines, doble puntuación y pausas de humor!
+                    </div>
+                </div>
+            </div>
+            <div class="footer">
+                <button class="action-btn" onclick="startGame()">🚀 Iniciar Desafío</button>
+            </div>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="screen-game" class="screen">
+            <div class="header">
+                <div class="top-bar">
+                    <span id="question-tracker">Pregunta 1 de 30</span>
+                    <div class="badge-container">
+                        <span id="double-badge" class="badge badge-double" style="display:none;">⚡ x2 Puntos</span>
+                        <span id="shield-badge" class="badge badge-shield" style="display:none;">🛡️ Escudo</span>
+                        <span id="streak-badge" class="badge badge-streak">🔥 Racha: x1</span>
+                    </div>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="progress-fill" class="progress-bar-fill"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted);">
+                    <span>PUNTOS: <strong id="score-display" style="color: var(--accent-gold);">0</strong></span>
+                    <span id="topic-tag" style="color: var(--primary-cyan);">🌿 Ciencia</span>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="card">
+                    <h2 id="question-text" class="question-title">Texto de la pregunta</h2>
+                </div>
+
+                <div id="options-container" class="options-grid">
+                    <!-- Dynamic Options -->
+                </div>
+
+                <div id="feedback-panel" class="feedback-panel">
+                    <div id="feedback-header" class="feedback-header"></div>
+                    <div id="explanation-text" class="explanation-box"></div>
+                    <div id="joke-box" class="joke-card" style="display: none;">
+                        <span>😂</span>
+                        <span id="joke-text">Chiste...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <button id="next-btn" class="action-btn" onclick="nextQuestion()" disabled style="opacity: 0.5;">Selecciona una opción</button>
+            </div>
+        </div>
+
+        <!-- RESULTS SCREEN -->
+        <div id="screen-results" class="screen">
+            <div class="main-content" style="justify-content: center;">
+                <div class="card results-card">
+                    <h2>🏆 ¡Desafío Completado!</h2>
+                    <div id="final-score" class="score-display">0 PTS</div>
+                    
+                    <div id="feedback-message" class="feedback-msg">¡Buen trabajo!</div>
+
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <span id="stat-accuracy" class="stat-value">0%</span>
+                            <span class="stat-label">Aciertos</span>
+                        </div>
+                        <div class="stat-box">
+                            <span id="stat-correct" class="stat-value">0 / 30</span>
+                            <span class="stat-label">Preguntas</span>
+                        </div>
+                        <div class="stat-box">
+                            <span id="stat-max-streak" class="stat-value">0</span>
+                            <span class="stat-label">Mejor Racha</span>
+                        </div>
+                        <div class="stat-box">
+                            <span id="stat-surprises" class="stat-value">0</span>
+                            <span class="stat-label">Sorpresas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer">
+                <button class="action-btn" onclick="startGame()">🔄 Reintentar Desafío</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- BASE DATA ---
+        const RAW_QUESTIONS = [
+            {
+                q: "¿Cuál es el gas más abundante en la atmósfera de la Tierra?",
+                options: ["Oxígeno", "Nitrógeno", "Dióxido de carbono", "Argón"],
+                correct: 1,
+                exp: "El nitrógeno constituye aproximadamente el 78% de la atmósfera terrestre, siendo el gas más abundante. El oxígeno representa cerca del 21%, mientras que el argón y el dióxido de carbono se encuentran en proporciones mucho menores."
+            },
+            {
+                q: "¿Qué orgánulo celular es conocido como la "central energética" de la célula?",
+                options: ["Ribosoma", "Aparato de Golgi", "Mitocondria", "Lisosoma"],
+                correct: 2,
+                exp: "Las mitocondrias son los orgánulos encargados de producir la mayor parte de la energía química necesaria para las reacciones bioquímicas de la célula mediante la respiración celular. Los ribosomas sintetizan proteínas, el aparato de Golgi modifica y empaqueta macromoléculas, y los lisosomas contienen enzimas digestivas."
+            },
+            {
+                q: "¿Cuál es el proceso mediante el cual las plantas convierten la luz solar en energía química?",
+                options: ["Transpiración", "Respiración celular", "Fotosíntesis", "Fermentación"],
+                correct: 2,
+                exp: "La fotosíntesis es el proceso metabólico por el cual las plantas, algas y algunas bacterias utilizan la energía de la luz solar para transformar dióxido de carbono y agua en glucosa y oxígeno. La transpiración es la pérdida de agua en forma de vapor, y la respiración celular descompone moléculas orgánicas para obtener energía."
+            },
+            {
+                q: "¿Qué capa de la atmósfera terrestre es la responsable de absorber la mayor parte de la radiación ultravioleta del Sol?",
+                options: ["Troposfera", "Estratosfera", "Mesosfera", "Termosfera"],
+                correct: 1,
+                exp: "La capa de ozono se encuentra ubicada en la estratosfera y actúa como un poderoso filtro que absorbe la radiación ultravioleta dañina procedente del Sol. Las demás capas tienen diferentes características térmicas y composiciones, pero no concentran la capa de ozono protectora."
+            },
+            {
+                q: "¿Cuál es el planeta más grande del sistema solar?",
+                options: ["Saturno", "Neptuno", "Júpiter", "Urano"],
+                correct: 2,
+                exp: "Júpiter es un gigante gaseoso y el planeta más voluminoso y masivo del sistema solar, superando con creces el tamaño combinado de todos los demás planetas. Saturno le sigue en tamaño, pero ocupa el segundo lugar."
+            },
+            {
+                q: "¿Qué tipo de roca se forma a partir del enfriamiento y solidificación del magma o lava?",
+                options: ["Roca sedimentaria", "Roca metamórfica", "Roca ígnea", "Roca carbonatada"],
+                correct: 2,
+                exp: "Las rocas ígneas se originan cuando el material fundido del interior de la Tierra (magma) o de la superficie (lava) se enfría y cristaliza. Las sedimentarias se forman por acumulación de sedimentos y las metamórficas por transformación de rocas preexistentes bajo altas presiones y temperaturas."
+            },
+            {
+                q: "¿Qué partícula subatómica posee carga eléctrica negativa?",
+                options: ["Protón", "Neutrón", "Electrón", "Positrón"],
+                correct: 2,
+                exp: "El electrón es una partícula subatómica que orbita alrededor del núcleo atómico y cuenta con una carga eléctrica elemental negativa. Por el contrario, el protón tiene carga positiva y el neutrón carece de carga eléctrica neta."
+            },
+            {
+                q: "¿Cuál es el órgano más grande del cuerpo humano?",
+                options: ["El hígado", "El cerebro", "La piel", "El intestino delgado"],
+                correct: 2,
+                exp: "La piel es el órgano más extenso del cuerpo humano, cumpliendo funciones vitales de protección, regulación térmica y sensibilidad. Aunque el hígado y el cerebro son órganos internos muy voluminosos, la superficie cutánea los supera en extensión total."
+            },
+            {
+                q: "¿Qué fuerza fundamental de la naturaleza mantiene a los planetas en órbita alrededor del Sol?",
+                options: ["La fuerza electromagnética", "La fuerza de gravedad", "La fuerza nuclear fuerte", "La fuerza de fricción"],
+                correct: 1,
+                exp: "La gravedad es la fuerza de atracción mutua entre masas que, a escala cósmica, gobierna el movimiento de los planetas, lunas y estrellas. Las fuerzas nucleares operan a escala subatómica y la fricción es una fuerza de contacto en superficies."
+            },
+            {
+                q: "¿Qué nombre recibe la unidad básica de la herencia genética en los organismos vivos?",
+                options: ["Cromosoma", "Gen", "Proteína", "Nucleótido"],
+                correct: 1,
+                exp: "Un gen es una unidad molecular de almacenamiento de información genética y herencia física compuesta por secuencias de ADN. Los cromosomas son estructuras grandes que contienen muchos genes, y los nucleótidos son los bloques de construcción individuales del ADN."
+            },
+            {
+                q: "¿Cuál es el pH de una sustancia considerada químicamente neutra a temperatura ambiente?",
+                options: ["0", "7", "14", "10"],
+                correct: 1,
+                exp: "En la escala de pH, que va de 0 a 14, el valor 7 indica una solución neutra (como el agua pura), donde las concentraciones de iones hidrógeno e hidróxido están equilibradas. Los valores inferiores a 7 son ácidos y los superiores son básicos o alcalinos."
+            },
+            {
+                q: "¿Qué fenómeno físico explica que un objeto sumergido en un líquido experimente un empuje vertical hacia arriba?",
+                options: ["El principio de Pascal", "El principio de Arquímedes", "La ley de Bernoulli", "La ley de Ohm"],
+                correct: 1,
+                exp: "El principio de Arquímedes establece que todo cuerpo sumergido total o parcialmente en un fluido experimenta una fuerza de empuje hacia arriba igual al peso del volumen del fluido desalojado. El principio de Pascal se relaciona con la presión en fluidos confinados y Bernoulli con la velocidad de flujo."
+            },
+            {
+                q: "¿Cuál es el animal terrestre más rápido del mundo?",
+                options: ["El león", "La gacela", "El guepardo", "El caballo"],
+                correct: 2,
+                exp: "El guepardo (o chita) es capaz de alcanzar velocidades cercanas a los 100-120 km/h en carreras cortas de aceleración explosiva. Aunque otros animales como el berrendo o la gacela tienen gran resistencia a la carrera larga, el guepardo ostenta el récord de velocidad máxima puntual."
+            },
+            {
+                q: "¿Cómo se denomina el punto de la superficie terrestre situado directamente encima del hipocentro de un terremoto?",
+                options: ["Epicentro", "Foco sísmico", "Antípoda", "Fallas tectónicas"],
+                correct: 0,
+                exp: "El epicentro es el punto geográfico en la superficie de la Tierra ubicado justo sobre el foco o hipocentro, que es el lugar exacto en el interior del planeta donde se origina la liberación de energía sísmica."
+            },
+            {
+                q: "¿Cuál es el metal que se encuentra en estado líquido a temperatura ambiente?",
+                options: ["El oro", "El hierro", "El mercurio", "El aluminio"],
+                correct: 2,
+                exp: "El mercurio es el único metal conocido que es líquido en condiciones estándar de presión y temperatura. El resto de los metales mencionados son sólidos muy resistentes y con altos puntos de fusión."
+            },
+            {
+                q: "¿Qué gas liberan principalmente los seres humanos y los animales durante la respiración aeróbica?",
+                options: ["Oxígeno", "Dióxido de carbono", "Hidrógeno", "Nitrógeno"],
+                correct: 1,
+                exp: "Durante el proceso metabólico de la respiración celular, los organismos consumen oxígeno para transformar nutrientes y liberan dióxido de carbono como producto de desecho. Las plantas realizan el proceso inverso durante las horas de luz solar mediante la fotosíntesis."
+            },
+            {
+                q: "¿Cuál es la galaxia espiral más cercana y de mayor tamaño visible desde la Tierra?",
+                options: ["La galaxia del Sombrero", "La galaxia de Andrómeda", "La Pequeña Nube de Magallanes", "La galaxia del Triángulo"],
+                correct: 1,
+                exp: "La galaxia de Andrómeda (M31) es una gran galaxia espiral situada a unos 2.5 millones de años luz de la Tierra, siendo el objeto estelar visible a simple vista más lejano y nuestra vecina galáctica principal."
+            },
+            {
+                q: "¿Qué vitamina es producida principalmente por la piel humana cuando se expone a la luz solar directa?",
+                options: ["Vitamina A", "Vitamina C", "Vitamina D", "Vitamina K"],
+                correct: 2,
+                exp: "La radiación ultravioleta del sol estimula la síntesis de vitamina D en las células de la piel humana, un nutriente esencial para la absorción del calcio y la salud ósea. Las otras vitaminas se obtienen fundamentalmente a través de la dieta diaria."
+            },
+            {
+                q: "¿Cómo se llama el proceso biológico mediante el cual una oruga se transforma en mariposa?",
+                options: ["Germinación", "Metamorfosis", "Fisión binaria", "Conjugación"],
+                correct: 1,
+                exp: "La metamorfosis es el proceso de desarrollo biológico en el cual los animales experimentan cambios estructurales y físicos drásticos desde su fase larvaria hasta su etapa adulta, como ocurre en los insectos y anfibios."
+            },
+            {
+                q: "¿Cuál es la capa más interna y densa de la estructura de la Tierra?",
+                options: ["La corteza", "El manto superior", "El núcleo", "La litosfera"],
+                correct: 2,
+                exp: "El núcleo terrestre, compuesto principalmente de hierro y níquel, es la capa más profunda, densa y caliente del planeta, dividida en un núcleo externo líquido y un núcleo interno sólido. La corteza y la litosfera forman las capas superficiales y rígidas."
+            },
+            {
+                q: "¿Qué tipo de lente es más gruesa en los bordes que en el centro y se utiliza para corregir la miopía?",
+                options: ["Lente convexa", "Lente cóncava", "Lente plana", "Lente cilíndrica"],
+                correct: 1,
+                exp: "Las lentes cóncavas divergen los rayos de luz que las atraviesan, lo cual ayuda a corregir el defecto visual de la miopía retrasando el punto focal hacia la retina. Las lentes convexas convergen la luz y se usan para la hipermetropía."
+            },
+            {
+                q: "¿Cuál es el compuesto químico universalmente conocido como el disolvente universal debido a su capacidad para disolver muchas sustancias?",
+                options: ["El alcohol etílico", "El ácido clorhídrico", "El agua", "La acetona"],
+                correct: 2,
+                exp: "Debido a la polaridad de sus moléculas, el agua (H2O) tiene la capacidad de disolver una gran variedad de sustancias químicas, razón por la cual se le denomina comúnmente el disolvente universal en la naturaleza."
+            },
+            {
+                q: "¿Qué nombre recibe la ciencia que estudia los fósiles y la evolución de la vida prehistórica en la Tierra?",
+                options: ["Geología", "Paleontología", "Arqueología", "Ecología"],
+                correct: 1,
+                exp: "La paleontología es la disciplina científica que interpreta el pasado de la vida en la Tierra a través del estudio de los restos fósiles de animales y plantas. La arqueología, en cambio, estudia las sociedades humanas antiguas mediante restos materiales."
+            },
+            {
+                q: "¿Qué velocidad aproximada tiene la luz en el vacío?",
+                options: ["300,000 kilómetros por segundo", "150,000 kilómetros por segundo", "3,000 kilómetros por segundo", "1,080,000 kilómetros por hora"],
+                correct: 0,
+                exp: "La velocidad de la luz en el vacío es una constante física fundamental universal de aproximadamente 300,000 km/s (o exactamente 299,792,458 m/s), siendo la velocidad máxima a la que se puede desplazar la energía y la información en el universo."
+            },
+            {
+                q: "¿Qué grupo de animales vertebrados se caracteriza por tener la piel desnuda y húmeda, y pasar parte de su vida en el agua y otra en la tierra?",
+                options: ["Los reptiles", "Los anfibios", "Los mamíferos", "Las aves"],
+                correct: 1,
+                exp: "Los anfibios (como ranas, sapos y salamandras) son animales vertebrados que por lo general experimentan un ciclo de vida acuático en su fase juvenil (renacuajos con branquias) y terrestre en su fase adulta (con respiración pulmonar y cutánea)."
+            },
+            {
+                q: "¿Cuál es la unidad del Sistema Internacional utilizada para medir la frecuencia de un fenómeno ondatorio o eléctrico?",
+                options: ["El julio", "El hercio", "El vatio", "El ohmio"],
+                correct: 1,
+                exp: "El hercio (Hz) mide el número de ciclos o repeticiones por segundo de una onda u oscilación periódica. El julio mide energía, el vatio mide potencia y el ohmio mide resistencia eléctrica."
+            },
+            {
+                q: "¿Qué elemento químico es el componente principal de los diamantes y del grafito?",
+                options: ["El silicio", "El carbono", "El boro", "El azufre"],
+                correct: 1,
+                exp: "Tanto el diamante como el grafito son formas alotrópicas del carbono, es decir, están compuestos enteramente por átomos de carbono pero organizados en estructuras cristalinas diferentes, lo que les confiere propiedades físicas muy distintas."
+            },
+            {
+                q: "¿Cómo se llama el proceso químico exotérmico de oxidación rápida que produce luz y calor?",
+                options: ["Condensación", "Combustión", "Oxidación lenta", "Sublimación"],
+                correct: 1,
+                exp: "La combustión es una reacción química de oxidación rápida entre un combustible y un comburente (como el oxígeno) que libera energía en forma de calor y luz (fuego). La condensación y la sublimación son cambios de estado físico de la materia."
+            },
+            {
+                q: "¿Qué parte de la flor es la estructura reproductora masculina que produce los granos de polen?",
+                options: ["El pistilo", "El estambre", "El sépalo", "El pétalo"],
+                correct: 1,
+                exp: "El estambre es el órgano masculino de la flor, compuesto por la antera (donde se generan los granos de polen) y el filamento. El pistilo es el órgano femenino que contiene el ovario, mientras que los sépalos y pétalos protegen y adornan la flor."
+            },
+            {
+                q: "¿Qué ley de la física establece que "a toda acción siempre se opone una reacción igual y contraria"?",
+                options: ["Primera ley de Newton", "Segunda ley de Newton", "Tercera ley de Newton", "Ley de la gravitación universal"],
+                correct: 2,
+                exp: "La tercera ley de Newton (o ley de acción y reacción) postula que si un cuerpo ejerce una fuerza sobre otro, este último ejerce una fuerza de igual magnitud y dirección pero en sentido opuesto sobre el primero. La primera es la ley de inercia y la segunda vincula fuerza, masa y aceleración."
+            }
+        ];
+
+        const JOKES = [
+            "¿Qué le dice un neutrón a un camarero? — ¿Cuánto le debo? Y el camarero responde: — Para ti, ¡sin carga!",
+            "¿Por qué los osos polares no se disuelven en agua? — ¡Porque no son polares! (Química pura 😉)",
+            "¿Qué hace un electrón cuando pierde el autobús? — ¡Se va en su propia órbita!",
+            "¿Cuál es el pez más inteligente? — El pez-ado... ¡no, la ballena con un máster!",
+            "Un fotón entra en un hotel y el recepcionista le pregunta si necesita equipaje. El fotón responde: — No gracias, ¡viajo ligero!",
+            "¿Qué le dice una célula a otra que le tropieza? — ¡Oye, ten más organelo!",
+            "¿Por qué las plantas odian las matemáticas? — ¡Porque les salen raíces cuadradas!",
+            "¿Qué es un terabyte? — Un terodáctilo gigante comiendo bytes.",
+            "¿Por qué la Luna no tiene miedo de la Noche? — ¡Porque siempre está acompañada de estrellas!",
+            "¿Cómo se saludan los biólogos celulares? — ¡Hola, qué tal tu mitosis!",
+            "¿Qué dice un átomo de helio ante un chiste malo? — ¡He, he, he!",
+            "¿Por qué el libro de física estaba triste? — Porque tenía demasiados problemas gravitatorios.",
+            "¿Cuál es el colmo de un botánico? — Tener una vida muy ramificada.",
+            "¿Qué le dijo el volcán a la montaña? — ¡Me haces erupcionar de alegría!",
+            "¿Por qué no podemos confiar en los átomos? — ¡Porque lo componen todo!"
+        ];
+
+        const CHEER_MESSAGES = [
+            "¡Excelente deducción!", "¡Brillante!", "¡Dominas la ciencia!", 
+            "¡Respuesta impecable!", "¡Menuda mente científica!", "¡Avanzas imparable!"
+        ];
+
+        // --- GAME STATE VARIABLES ---
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let streak = 0;
+        let maxStreak = 0;
+        let correctAnswersCount = 0;
+        let surprisesFound = 0;
+        let usedJokes = [];
+
+        // Modifiers for active question
+        let activeMultiplier = 1;
+        let activeShield = false;
+        let lastSurpriseIndex = -5;
+
+        // --- UTILITY FUNCTIONS ---
+        function shuffle(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function escapeHTML(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function parseFormattedText(str) {
+            let safe = escapeHTML(str);
+            return safe.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        }
+
+        function getStreakMultiplier(s) {
+            if (s <= 1) return 1;
+            if (s === 2) return 1.5;
+            if (s === 3) return 2;
+            if (s === 4) return 2.5;
+            return 3;
+        }
+
+        // --- GAME LOGIC ---
+        function startGame() {
+            // Reset state
+            currentIndex = 0;
+            score = 0;
+            streak = 0;
+            maxStreak = 0;
+            correctAnswersCount = 0;
+            surprisesFound = 0;
+            usedJokes = [];
+            lastSurpriseIndex = -5;
+
+            // Prepare questions (Fisher-Yates)
+            currentQuestions = shuffle(RAW_QUESTIONS).map(item => {
+                let optionsWithOrigIndex = item.options.map((opt, idx) => ({
+                    text: opt,
+                    isCorrect: idx === item.correct
+                }));
+                let shuffledOpts = shuffle(optionsWithOrigIndex);
+                return {
+                    q: item.q,
+                    options: shuffledOpts,
+                    exp: item.exp
+                };
+            });
+
+            // Show Game Screen
+            document.getElementById('screen-welcome').classList.remove('active');
+            document.getElementById('screen-results').classList.remove('active');
+            document.getElementById('screen-game').classList.add('active');
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const qData = currentQuestions[currentIndex];
+            activeMultiplier = 1;
+            activeShield = false;
+
+            // Update UI Counters
+            document.getElementById('question-tracker').innerText = `Pregunta ${currentIndex + 1} de ${currentQuestions.length}`;
+            document.getElementById('score-display').innerText = score;
+            document.getElementById('progress-fill').style.width = `${((currentIndex) / currentQuestions.length) * 100}%`;
+            
+            let mult = getStreakMultiplier(streak);
+            document.getElementById('streak-badge').innerText = `🔥 Racha: x${mult}`;
+
+            // Reset Badges
+            document.getElementById('double-badge').style.display = 'none';
+            document.getElementById('shield-badge').style.display = 'none';
+
+            // Check Pre-question surprise trigger (25% chance, not in first 2, not consecutive, max 1 every 5)
+            let isSurprise = false;
+            if (currentIndex >= 2 && (currentIndex - lastSurpriseIndex >= 3)) {
+                if (Math.random() < 0.25) {
+                    isSurprise = true;
+                    lastSurpriseIndex = currentIndex;
+                    surprisesFound++;
+                    triggerPreSurprise();
+                }
+            }
+
+            // Render Text
+            document.getElementById('question-text').innerHTML = parseFormattedText(qData.q);
+
+            // Render Options
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            const keys = ['A', 'B', 'C', 'D'];
+
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.id = `opt-${idx}`;
+                btn.onclick = () => selectOption(idx);
+                btn.innerHTML = `
+                    <span class="option-key">${keys[idx]}</span>
+                    <span>${parseFormattedText(opt.text)}</span>
+                `;
+                container.appendChild(btn);
+            });
+
+            // Reset Feedback Panel
+            const fbPanel = document.getElementById('feedback-panel');
+            fbPanel.className = 'feedback-panel';
+            fbPanel.style.display = 'none';
+            document.getElementById('joke-box').style.display = 'none';
+
+            // Reset Footer Button
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.disabled = true;
+            nextBtn.style.opacity = '0.5';
+            nextBtn.innerText = 'Selecciona una opción';
+        }
+
+        function triggerPreSurprise() {
+            const types = ['double', 'fifty', 'shield'];
+            const chosen = types[Math.floor(Math.random() * types.length)];
+            
+            const modal = document.getElementById('surprise-modal');
+            const icon = document.getElementById('modal-icon');
+            const title = document.getElementById('modal-title');
+            const desc = document.getElementById('modal-desc');
+
+            if (chosen === 'double') {
+                icon.innerText = '⚡';
+                title.innerText = '¡Pregunta Doble!';
+                desc.innerText = '¡Si aciertas esta pregunta obtendrás el DOBLADO de puntos!';
+                activeMultiplier = 2;
+                document.getElementById('double-badge').style.display = 'inline-flex';
+            } else if (chosen === 'shield') {
+                icon.innerText = '🛡️';
+                title.innerText = '¡Escudo de Racha!';
+                desc.innerText = '¡Un manto protector! Si fallas esta pregunta, NO perderás tu racha actual.';
+                activeShield = true;
+                document.getElementById('shield-badge').style.display = 'inline-flex';
+            } else if (chosen === 'fifty') {
+                icon.innerText = '🎁';
+                title.innerText = '¡Comodín 50/50 Regalado!';
+                desc.innerText = '¡Se han eliminado 2 opciones incorrectas para facilitarte el camino!';
+                // Apply 50/50 immediately
+                applyFiftyFifty();
+            }
+
+            modal.classList.add('active');
+        }
+
+        function applyFiftyFifty() {
+            const qData = currentQuestions[currentIndex];
+            let incorrectIndices = [];
+            qData.options.forEach((opt, idx) => {
+                if (!opt.isCorrect) incorrectIndices.push(idx);
+            });
+            // Shuffle incorrect to disable 2
+            incorrectIndices = shuffle(incorrectIndices);
+            let toRemove = incorrectIndices.slice(0, 2);
+            
+            setTimeout(() => {
+                toRemove.forEach(idx => {
+                    const btn = document.getElementById(`opt-${idx}`);
+                    if (btn) btn.classList.add('hidden-50');
+                });
+            }, 300);
+        }
+
+        function closeModal() {
+            document.getElementById('surprise-modal').classList.remove('active');
+        }
+
+        function selectOption(index) {
+            const qData = currentQuestions[currentIndex];
+            const isCorrect = qData.options[index].isCorrect;
+
+            // Disable all buttons
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(b => b.disabled = true);
+
+            const fbPanel = document.getElementById('feedback-panel');
+            const fbHeader = document.getElementById('feedback-header');
+            const expText = document.getElementById('explanation-text');
+            const jokeBox = document.getElementById('joke-box');
+
+            expText.innerHTML = `<strong>Explicación didáctica:</strong> ${parseFormattedText(qData.exp)}`;
+
+            let postSurpriseJoke = false;
+
+            if (isCorrect) {
+                document.getElementById(`opt-${index}`).classList.add('correct');
+                correctAnswersCount++;
+                streak++;
+                if (streak > maxStreak) maxStreak = streak;
+
+                let mult = getStreakMultiplier(streak);
+                let gainedPoints = 100 * mult * activeMultiplier;
+                score += gainedPoints;
+                document.getElementById('score-display').innerText = score;
+
+                let cheer = CHEER_MESSAGES[Math.floor(Math.random() * CHEER_MESSAGES.length)];
+                fbHeader.innerHTML = `<span>✅ ¡Correcto!</span> <span style="font-size:0.85rem; font-weight:normal; margin-left:auto;">+${gainedPoints} pts (${cheer})</span>`;
+                fbPanel.className = 'feedback-panel correct';
+
+                // Post surprise check: Chest (18%) or Joke (17%)
+                let rnd = Math.random();
+                if (rnd < 0.18) {
+                    triggerChestSurprise();
+                } else if (rnd < 0.35) {
+                    postSurpriseJoke = true;
+                }
+            } else {
+                document.getElementById(`opt-${index}`).classList.add('wrong');
+                // Highlight correct
+                qData.options.forEach((opt, idx) => {
+                    if (opt.isCorrect) {
+                        document.getElementById(`opt-${idx}`).classList.add('correct');
+                    }
+                });
+
+                if (activeShield) {
+                    fbHeader.innerHTML = `<span>❌ ¡Incorrecto!</span> <span style="font-size:0.85rem; font-weight:normal; margin-left:auto;">🛡️ Racha protegida</span>`;
+                } else {
+                    streak = 0;
+                    fbHeader.innerHTML = `<span>❌ ¡Incorrecto!</span> <span style="font-size:0.85rem; font-weight:normal; margin-left:auto;">Racha reiniciada</span>`;
+                }
+                fbPanel.className = 'feedback-panel wrong';
+
+                // Post surprise check for wrong: Joke (40%)
+                if (Math.random() < 0.40) {
+                    postSurpriseJoke = true;
+                }
+            }
+
+            // Display Joke if triggered
+            if (postSurpriseJoke) {
+                showRandomJoke();
+            }
+
+            fbPanel.style.display = 'flex';
+
+            // Enable Next Button
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.disabled = false;
+            nextBtn.style.opacity = '1';
+            if (currentIndex === currentQuestions.length - 1) {
+                nextBtn.innerText = '🏁 Ver Resultados (Enter)';
+            } else {
+                nextBtn.innerText = 'Siguiente Pregunta ➔ (Enter)';
+            }
+        }
+
+        function triggerChestSurprise() {
+            surprisesFound++;
+            const bonuses = [50, 100, 150, 200];
+            const bonus = bonuses[Math.floor(Math.random() * bonuses.length)];
+            score += bonus;
+            document.getElementById('score-display').innerText = score;
+
+            const modal = document.getElementById('surprise-modal');
+            document.getElementById('modal-icon').innerText = '🎁';
+            document.getElementById('modal-title').innerText = '¡Cofre Sorpresa!';
+            document.getElementById('modal-desc').innerText = `¡Has encontrado un cofre secreto y has ganado +${bonus} puntos extras!`;
+            modal.classList.add('active');
+
+            launchConfetti();
+        }
+
+        function showRandomJoke() {
+            if (usedJokes.length >= JOKES.length) usedJokes = [];
+            let available = JOKES.filter(j => !usedJokes.includes(j));
+            let chosen = available[Math.floor(Math.random() * available.length)];
+            usedJokes.push(chosen);
+
+            document.getElementById('joke-text').innerText = chosen;
+            document.getElementById('joke-box').style.display = 'flex';
+        }
+
+        function nextQuestion() {
+            if (currentIndex < currentQuestions.length - 1) {
+                currentIndex++;
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('screen-game').classList.remove('active');
+            document.getElementById('screen-results').classList.add('active');
+
+            const pct = Math.round((correctAnswersCount / currentQuestions.length) * 100);
+            
+            document.getElementById('final-score').innerText = `${score} PTS`;
+            document.getElementById('stat-accuracy').innerText = `${pct}%`;
+            document.getElementById('stat-correct').innerText = `${correctAnswersCount} / ${currentQuestions.length}`;
+            document.getElementById('stat-max-streak').innerText = `x${maxStreak}`;
+            document.getElementById('stat-surprises').innerText = surprisesFound;
+
+            let msg = "";
+            if (pct >= 90) {
+                msg = "🌟 ¡Extraordinario! Demuestras un dominio total sobre la Ciencia y la Naturaleza.";
+                launchConfetti();
+            } else if (pct >= 75) {
+                msg = "👏 ¡Gran trabajo! Tienes unos conocimientos científicos muy sólidos.";
+                launchConfetti();
+            } else if (pct >= 60) {
+                msg = "👍 ¡Buen intento! Has superado el desafío, pero aún puedes afinar algunos conceptos.";
+            } else if (pct >= 40) {
+                msg = "📚 ¡Sigue repasando! Estás en buen camino para dominar la materia.";
+            } else {
+                msg = "🌱 ¡El aprendizaje es un proceso constante! Repasa las explicaciones y vuelve a intentarlo.";
+            }
+
+            document.getElementById('feedback-message').innerText = msg;
+        }
+
+        // --- KEYBOARD CONTROLS ---
+        document.addEventListener('keydown', (e) => {
+            // Close modal with enter
+            const modal = document.getElementById('surprise-modal');
+            if (modal.classList.contains('active')) {
+                if (e.key === 'Enter') closeModal();
+                return;
+            }
+
+            const gameScreen = document.getElementById('screen-game');
+            if (!gameScreen.classList.contains('active')) {
+                if (e.key === 'Enter') {
+                    const welcomeScreen = document.getElementById('screen-welcome');
+                    if (welcomeScreen.classList.contains('active')) startGame();
+                    else showResults();
+                }
+                return;
+            }
+
+            // Game Active
+            const nextBtn = document.getElementById('next-btn');
+            if (!nextBtn.disabled && e.key === 'Enter') {
+                nextQuestion();
+                return;
+            }
+
+            if (nextBtn.disabled) {
+                const keyMap = { 'a': 0, 'A': 0, 'b': 1, 'B': 1, 'c': 2, 'C': 2, 'd': 3, 'D': 3 };
+                if (e.key in keyMap) {
+                    const idx = keyMap[e.key];
+                    const btn = document.getElementById(`opt-${idx}`);
+                    if (btn && !btn.disabled && !btn.classList.contains('hidden-50')) {
+                        selectOption(idx);
+                    }
+                }
+            }
+        });
+
+        // --- SIMPLE CANVAS CONFETTI ---
+        function launchConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const colors = ['#00f2fe', '#ffd700', '#10b981', '#ef4444', '#a855f7'];
+
+            for (let i = 0; i < 70; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: (Math.random() - 0.7) * 14,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    size: Math.random() * 8 + 4,
+                    life: 100
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let alive = false;
+
+                particles.forEach(p => {
+                    if (p.life > 0) {
+                        alive = true;
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += 0.3; // gravity
+                        p.life--;
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.max(Math.PI * 2, 0));
+                        ctx.fill();
+                    }
+                });
+
+                if (alive) requestAnimationFrame(animate);
+                else ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+
+            animate();
+        }
+    </script>
+</body>
+</html>
